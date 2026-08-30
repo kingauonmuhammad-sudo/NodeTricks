@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
-const MongoStore = require('connect-mongo').default; // <-- important for v6
+const MongoStore = require('connect-mongo').default; // v6
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
@@ -16,42 +16,45 @@ const saltRounds = 10;
 
 // Validate required environment variables
 if (!MONGO_URI) {
-    throw new Error('MONGO_URI environment variable is required');
+  throw new Error('MONGO_URI environment variable is required');
 }
 if (!secret) {
-    throw new Error('SECRET environment variable is required');
+  throw new Error('SECRET environment variable is required');
 }
+
+// Trust first proxy (important for secure cookies in production)
+app.set('trust proxy', 1);
 
 // -------------------- MongoDB Connection --------------------
 mongoose
-    .connect(MONGO_URI)
-    .then(() => {
-        console.log('MongoDB connected successfully');
-        // Start server only after DB is connected
-        app.listen(PORT, () => {
-            console.log(`Server running on http://localhost:${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error('MongoDB connection error:', err);
-        process.exit(1);
+  .connect(MONGO_URI)
+  .then(() => {
+    console.log('MongoDB connected successfully');
+    // Start server only after DB is connected
+    app.listen(PORT, () => {
+      console.log(`Server running on http://localhost:${PORT}`);
     });
+  })
+  .catch((err) => {
+    console.error('MongoDB connection error:', err);
+    process.exit(1);
+  });
 
 // -------------------- Session Store (connect-mongo v6) --------------------
 const store = MongoStore.create({
-    mongoUrl: MONGO_URI,
-    collectionName: 'sessions',
-    ttl: 365 * 24 * 60 * 60, // 1 year in seconds
-    autoRemove: 'native',
+  mongoUrl: MONGO_URI,
+  collectionName: 'sessions',
+  ttl: 365 * 24 * 60 * 60, // 1 year in seconds
+  autoRemove: 'native',
 });
 
 store.on('error', (error) => console.error('Session store error:', error));
 
 // -------------------- Middleware --------------------
 app.use(
-    fileUpload({
-        limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
-    })
+  fileUpload({
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  })
 );
 
 app.use(express.static(path.join(__dirname, 'public')));
@@ -60,56 +63,78 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 
 app.use(
-    session({
-        secret,
-        resave: false,
-        saveUninitialized: false,
-        store,
-        cookie: {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'lax',
-            maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year in ms
-        },
-    })
+  session({
+    secret,
+    resave: false,
+    saveUninitialized: false,
+    store,
+    cookie: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 365 * 24 * 60 * 60 * 1000, // 1 year in ms
+    },
+  })
 );
 
 // -------------------- Mongoose Models --------------------
 const userSchema = new mongoose.Schema({
-    name: { type: String, required: true, unique: true },
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
+  name: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
 });
 const User = mongoose.model('User', userSchema);
 
 const fileSchema = new mongoose.Schema({
-    filename: { type: String, required: true },
-    title: { type: String, required: true },
-    description: { type: String },
-    userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    uploadedAt: { type: Date, default: Date.now },
+  filename: { type: String, required: true },
+  title: { type: String, required: true },
+  description: { type: String },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  uploadedAt: { type: Date, default: Date.now },
 });
 const File = mongoose.model('File', fileSchema);
 
 // -------------------- Upload Directory --------------------
 const uploadDir = path.join(__dirname, 'uploads');
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // -------------------- Routes --------------------
 
+// Debug session route (use in production to check cookies)
+app.get('/debug-session', (req, res) => {
+  console.log('Debug session hit');
+  console.log('  req.session.userId =', req.session.userId);
+  console.log('  req.sessionID =', req.sessionID);
+  console.log('  req.headers.cookie =', req.headers.cookie);
+
+  res.json({
+    sessionUserId: req.session.userId || null,
+    sessionID: req.sessionID || null,
+    cookies: req.headers.cookie || null,
+  });
+});
+
 // Home
 app.get('/', async (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
-    try {
-        const user = await User.findById(req.session.userId);
-        const files = await File.find().sort({ uploadedAt: -1 });
-        res.render('index', { user, files });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
+  console.log('Home route hit');
+  console.log('  req.session.userId =', req.session.userId);
+  console.log('  req.sessionID =', req.sessionID);
+
+  if (!req.session.userId) {
+    console.log('No userId in session, redirecting to /login');
+    return res.redirect('/login');
+  }
+
+  try {
+    const user = await User.findById(req.session.userId);
+    const files = await File.find().sort({ uploadedAt: -1 });
+    res.render('index', { user, files });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
 });
 
 // Auth pages
@@ -118,179 +143,206 @@ app.get('/login', (req, res) => res.render('login'));
 
 // Upload page
 app.get('/upload', async (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
-    try {
-        const user = await User.findById(req.session.userId);
-        res.render('upload', { user });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
+  if (!req.session.userId) return res.redirect('/login');
+  try {
+    const user = await User.findById(req.session.userId);
+    res.render('upload', { user });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
 });
 
 // Dashboard
 app.get('/dashboard', async (req, res) => {
-    if (!req.session.userId) return res.redirect('/login');
-    try {
-        const user = await User.findById(req.session.userId);
-        const myFiles = await File.find({ userId: user._id }).sort({ uploadedAt: -1 });
-        res.render('dashboard', { user, files: myFiles });
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Server error');
-    }
+  if (!req.session.userId) return res.redirect('/login');
+  try {
+    const user = await User.findById(req.session.userId);
+    const myFiles = await File.find({ userId: user._id }).sort({ uploadedAt: -1 });
+    res.render('dashboard', { user, files: myFiles });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Server error');
+  }
 });
 
 // ---- Auth handlers ----
 app.post('/auth/signup', async (req, res) => {
-    const { name, email, password } = req.body;
-    try {
-        const existingEmail = await User.findOne({ email });
-        if (existingEmail) return res.status(400).send('Email already exists');
-
-        const existingName = await User.findOne({ name });
-        if (existingName) return res.status(400).send('Name already exists');
-
-        const hashedPassword = await bcrypt.hash(password, saltRounds);
-        const user = new User({ name, email, password: hashedPassword });
-        await user.save();
-
-        req.session.userId = user._id;
-        res.redirect('/'); // logged in and sent to home
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error during signup');
+  const { name, email, password } = req.body;
+  console.log('Signup attempt:', { name, email });
+  try {
+    const existingEmail = await User.findOne({ email });
+    if (existingEmail) {
+      console.log('Signup failed: email exists');
+      return res.status(400).send('Email already exists');
     }
+
+    const existingName = await User.findOne({ name });
+    if (existingName) {
+      console.log('Signup failed: name exists');
+      return res.status(400).send('Name already exists');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const user = new User({ name, email, password: hashedPassword });
+    await user.save();
+
+    req.session.userId = user._id;
+    req.session.isLoggedIn = true;
+
+    console.log('Signup OK, session.userId =', req.session.userId);
+    console.log('Session ID =', req.sessionID);
+
+    res.redirect('/'); // logged in and sent to home
+  } catch (err) {
+    console.error('Signup error:', err);
+    res.status(500).send('Error during signup');
+  }
 });
 
 app.post('/auth/login', async (req, res) => {
-    const { email, password } = req.body;
-    try {
-        const user = await User.findOne({ email });
-        if (!user) return res.status(400).send('User not found');
-
-        const match = await bcrypt.compare(password, user.password);
-        if (!match) return res.status(400).send('Incorrect password');
-
-        req.session.userId = user._id;
-        req.session.isLoggedIn = true;
-        res.redirect('/');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error during login');
+  const { email, password } = req.body;
+  console.log('Login attempt:', { email });
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      console.log('Login failed: user not found');
+      return res.status(400).send('User not found');
     }
+
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      console.log('Login failed: incorrect password');
+      return res.status(400).send('Incorrect password');
+    }
+
+    req.session.userId = user._id;
+    req.session.isLoggedIn = true;
+
+    console.log('Login OK, session.userId =', req.session.userId);
+    console.log('Session ID =', req.sessionID);
+
+    res.redirect('/');
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).send('Error during login');
+  }
 });
 
 app.post('/logout', (req, res) => {
-    req.session.destroy((err) => {
-        if (err) return res.status(500).send('Logout failed');
-        res.redirect('/login');
-    });
+  req.session.destroy((err) => {
+    if (err) {
+      console.error('Logout error:', err);
+      return res.status(500).send('Logout failed');
+    }
+    console.log('Logout successful');
+    res.redirect('/login');
+  });
 });
 
 // ---- File upload ----
 app.post('/event/uploads', async (req, res) => {
-    if (!req.session.userId)
-        return res.status(401).send('You must be logged in to upload');
+  if (!req.session.userId)
+    return res.status(401).send('You must be logged in to upload');
 
-    const { title, description } = req.body;
-    if (!title) return res.status(400).send('Title is required');
-    if (!req.files || !req.files.htmlFile)
-        return res.status(400).send('No file uploaded.');
+  const { title, description } = req.body;
+  if (!title) return res.status(400).send('Title is required');
+  if (!req.files || !req.files.htmlFile)
+    return res.status(400).send('No file uploaded.');
 
-    const file = req.files.htmlFile;
+  const file = req.files.htmlFile;
 
-    try {
-        const user = await User.findById(req.session.userId);
-        const newFile = new File({
-            filename: file.name,
-            title,
-            description: description || '',
-            userId: user._id,
-        });
-        await newFile.save();
+  try {
+    const user = await User.findById(req.session.userId);
+    const newFile = new File({
+      filename: file.name,
+      title,
+      description: description || '',
+      userId: user._id,
+    });
+    await newFile.save();
 
-        const newFileName = `${newFile._id}.html`;
-        const uploadPath = path.join(uploadDir, newFileName);
-        await file.mv(uploadPath);
+    const newFileName = `${newFile._id}.html`;
+    const uploadPath = path.join(uploadDir, newFileName);
+    await file.mv(uploadPath);
 
-        res.redirect('/');
-    } catch (err) {
-        console.error('Upload error:', err);
-        res.status(500).send('Error saving file.');
-    }
+    res.redirect('/');
+  } catch (err) {
+    console.error('Upload error:', err);
+    res.status(500).send('Error saving file.');
+  }
 });
 
 // ---- Delete file ----
 app.post('/file/delete/:id', async (req, res) => {
-    if (!req.session.userId) return res.status(401).send('Unauthorized');
+  if (!req.session.userId) return res.status(401).send('Unauthorized');
 
-    const fileId = req.params.id;
-    try {
-        const file = await File.findById(fileId);
-        if (!file) return res.status(404).send('File not found');
-        if (file.userId.toString() !== String(req.session.userId))
-            return res.status(403).send('You do not own this file');
+  const fileId = req.params.id;
+  try {
+    const file = await File.findById(fileId);
+    if (!file) return res.status(404).send('File not found');
+    if (file.userId.toString() !== String(req.session.userId))
+      return res.status(403).send('You do not own this file');
 
-        const filePath = path.join(uploadDir, `${file._id}.html`);
-        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    const filePath = path.join(uploadDir, `${file._id}.html`);
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
 
-        await File.findByIdAndDelete(fileId);
-        res.redirect('/dashboard');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error deleting file');
-    }
+    await File.findByIdAndDelete(fileId);
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error deleting file');
+  }
 });
 
 // ---- Re‑upload (replace content) ----
 app.post('/file/reupload/:id', async (req, res) => {
-    if (!req.session.userId) return res.status(401).send('Unauthorized');
+  if (!req.session.userId) return res.status(401).send('Unauthorized');
 
-    const fileId = req.params.id;
-    if (!req.files || !req.files.htmlFile)
-        return res.status(400).send('No file uploaded.');
+  const fileId = req.params.id;
+  if (!req.files || !req.files.htmlFile)
+    return res.status(400).send('No file uploaded.');
 
-    try {
-        const fileDoc = await File.findById(fileId);
-        if (!fileDoc) return res.status(404).send('File not found');
-        if (fileDoc.userId.toString() !== String(req.session.userId))
-            return res.status(403).send('You do not own this file');
+  try {
+    const fileDoc = await File.findById(fileId);
+    if (!fileDoc) return res.status(404).send('File not found');
+    if (fileDoc.userId.toString() !== String(req.session.userId))
+      return res.status(403).send('You do not own this file');
 
-        const newFile = req.files.htmlFile;
-        const filePath = path.join(uploadDir, `${fileDoc._id}.html`);
-        await newFile.mv(filePath);
+    const newFile = req.files.htmlFile;
+    const filePath = path.join(uploadDir, `${fileDoc._id}.html`);
+    await newFile.mv(filePath);
 
-        fileDoc.filename = newFile.name;
-        await fileDoc.save();
+    fileDoc.filename = newFile.name;
+    await fileDoc.save();
 
-        res.redirect('/dashboard');
-    } catch (err) {
-        console.error(err);
-        res.status(500).send('Error re-uploading file');
-    }
+    res.redirect('/dashboard');
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Error re-uploading file');
+  }
 });
 
 // ---- Serve file ----
 app.get('/file/:filename', (req, res) => {
-    const filename = req.params.filename;
-    const safeFilename = path.basename(filename);
+  const filename = req.params.filename;
+  const safeFilename = path.basename(filename);
 
-    // Only allow .html files
-    if (!safeFilename.endsWith('.html')) {
-        return res.status(400).send('Invalid file type');
+  // Only allow .html files
+  if (!safeFilename.endsWith('.html')) {
+    return res.status(400).send('Invalid file type');
+  }
+
+  const filePath = path.join(uploadDir, safeFilename);
+
+  if (!fs.existsSync(filePath)) {
+    return res.status(404).send('File not found');
+  }
+
+  res.sendFile(filePath, (err) => {
+    if (err) {
+      console.error(err);
+      res.status(500).send('Error serving file');
     }
-
-    const filePath = path.join(uploadDir, safeFilename);
-
-    if (!fs.existsSync(filePath)) {
-        return res.status(404).send('File not found');
-    }
-
-    res.sendFile(filePath, (err) => {
-        if (err) {
-            console.error(err);
-            res.status(500).send('Error serving file');
-        }
-    });
+  });
 });
