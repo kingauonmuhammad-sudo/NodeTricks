@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
-const MongoStore = require('connect-mongo')(session);   // <-- correct
+const MongoStore = require('connect-mongo');       // v6 – no (session) call
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
@@ -19,15 +19,13 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB connected successfully'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// -------------------- Session Store in MongoDB (fixed) --------------------
-const store = new MongoStore({
+// -------------------- Session Store (v6) --------------------
+const store = MongoStore.create({
     mongoUrl: MONGO_URI,
     collectionName: 'sessions',
-    ttl: 365 * 24 * 60 * 60, // 1 year
+    ttl: 365 * 24 * 60 * 60, // 1 year in seconds
     autoRemove: 'native'
 });
-
-// Handle store errors
 store.on('error', error => console.error('Session store error:', error));
 
 app.use(fileUpload({
