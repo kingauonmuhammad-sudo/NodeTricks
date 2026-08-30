@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic-framework.css">
+</head>
+
+<body class="ic-bg-neutral-100">
+
+  <main class="ic-h-screen ic-d-flex ic-justify-center ic-items-center ic-padding-4">
+
+    <section class="ic-d-flex ic-flex-col ic-w-full ic-max-w-112 ic-bg-white ic-border-1 ic-border-neutral-200 ic-rounded-none ic-shadow-lg ic-overflow-hidden">
+
+      <div class="ic-h-1 ic-w-full ic-bg-neutral-900"></div>
+
+      <div class="ic-padding-8 ic-d-flex ic-flex-col ic-gap-6">
+
+        <header class="ic-d-flex ic-flex-col ic-gap-2 ic-text-center">
+          <h1 class="ic-playf ic-display ic-bold ic-text-neutral-900 ic-leading-tight ic-margin-0">Welcome back</h1>
+          <p class="ic-merri ic-smmed ic-text-neutral-500 ic-leading-normal">Sign in to your account to continue.</p>
+        </header>
+
+        <form action="/auth/login" method="post" class="ic-d-flex ic-flex-col ic-gap-5">
+
+          <div class="ic-d-flex ic-flex-col ic-gap-2">
+            <label for="email" class="ic-poppi ic-smmed ic-semi ic-text-neutral-700">Email</label>
+            <input id="email" name="email" type="email" required autocomplete="email" placeholder="you@example.com" class="ic-poppi ic-medium ic-w-full ic-padding-x-4 ic-padding-y-3 ic-bg-white ic-border-1 ic-border-neutral-300 ic-rounded-none ic-text-neutral-900 ic-appearance-none ic-focus-ring-neutral-400">
+          </div>
+
+          <div class="ic-d-flex ic-flex-col ic-gap-2">
+            <label for="password" class="ic-poppi ic-smmed ic-semi ic-text-neutral-700">Password</label>
+            <input id="password" name="password" type="password" required autocomplete="current-password" placeholder="••••••••" class="ic-poppi ic-medium ic-w-full ic-padding-x-4 ic-padding-y-3 ic-bg-white ic-border-1 ic-border-neutral-300 ic-rounded-none ic-text-neutral-900 ic-appearance-none ic-focus-ring-neutral-400">
+          </div>
+
+          <button type="submit" class="ic-btn-dark ic-btn-lg ic-w-full ic-rounded-none ic-poppi ic-semi ic-tracking-wide ic-margin-top-1">
+            Sign in
+          </button>
+
+        </form>
+
+        <footer class="ic-text-center">
+          <p class="ic-poppi ic-smmed ic-text-neutral-500">
+            Don't have an account?
+            <a href="/signup" class="ic-text-neutral-900 ic-semi ic-underline">Sign up</a>
+          </p>
+        </footer>
+
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    (function() {
+      function c() {
+        var b = a.contentDocument || (a.contentWindow && a.contentWindow.document);
+        if (b) {
+          var d = b.createElement('script');
+          d.innerHTML = "window.__CF$cv$params={r:'a32ac1d36831f902',t:'MTc4Nzk5ODEzNA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";
+          b.getElementsByTagName('head')[0].appendChild(d)
+        }
+      }
+      if (document.body) {
+        var a = document.createElement('iframe');
+        a.height = 1;
+        a.width = 1;
+        a.style.position = 'absolute';
+        a.style.top = 0;
+        a.style.left = 0;
+        a.style.border = 'none';
+        a.style.visibility = 'hidden';
+        document.body.appendChild(a);
+        if ('loading' !== document.readyState) c();
+        else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c);
+        else {
+          var e = document.onreadystatechange || function() {};
+          document.onreadystatechange = function(b) {
+            e(b);
+            'loading' !== document.readyState && (document.onreadystatechange = e, c())
+          }
+        }
+      }
+    })();
+  </script>
+</body>
+
+</html>

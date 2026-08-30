@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Upload – NodeTricks</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic-framework.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic.css">
+  <link rel="icon" href="./logo.svg" type="image/svg+xml">
+</head>
+
+<body class="ic-bg-neutral-100 ic-d-flex ic-flex-col ic-items-center ic-justify-center ic-padding-y-10 ic-padding-x-4">
+
+  <div class="ic-w-60 ic-margin-x-auto">
+
+    <!-- Card with top accent bar (matches your signup/login) -->
+    <div class="ic-bg-white ic-border-1 ic-border-neutral-200 ic-rounded-none ic-shadow-lg ic-overflow-hidden">
+
+      <div class="ic-h-1 ic-w-full ic-bg-neutral-900"></div>
+
+      <div class="ic-padding-8 ic-d-flex ic-flex-col ic-gap-6">
+
+        <!-- Header -->
+        <header class="ic-d-flex ic-flex-col ic-gap-2 ic-text-center">
+          <h1 class="ic-playf ic-display ic-bold ic-text-neutral-900 ic-leading-tight ic-margin-0">Upload a new file
+          </h1>
+          <p class="ic-merri ic-smmed ic-text-neutral-500 ic-leading-normal">Share your HTML file with NodeTricks.</p>
+        </header>
+
+        <form action="/event/uploads" method="post" enctype="multipart/form-data"
+          class="ic-d-flex ic-flex-col ic-gap-5">
+
+          <!-- Title -->
+          <div class="ic-d-flex ic-flex-col ic-gap-2">
+            <label for="title" class="ic-poppi ic-smmed ic-semi ic-text-neutral-700">Title <span
+                class="ic-text-neutral-500">*</span></label>
+            <input type="text" id="title" name="title" required placeholder="Enter a title for this file"
+              class="ic-poppi ic-medium ic-w-full ic-padding-x-4 ic-padding-y-3 ic-bg-white ic-border-1 ic-border-neutral-300 ic-rounded-none ic-text-neutral-900 ic-appearance-none ic-focus-ring-neutral-400">
+          </div>
+
+          <!-- Description -->
+          <div class="ic-d-flex ic-flex-col ic-gap-2">
+            <label for="description" class="ic-poppi ic-smmed ic-semi ic-text-neutral-700">Description</label>
+            <textarea id="description" name="description" rows="3" placeholder="Optional description"
+              class="ic-poppi ic-medium ic-w-full ic-padding-x-4 ic-padding-y-3 ic-bg-white ic-border-1 ic-border-neutral-300 ic-rounded-none ic-text-neutral-900 ic-appearance-none ic-resize-none ic-focus-ring-neutral-400"></textarea>
+          </div>
+
+          <!-- File drop zone -->
+          <div class="ic-d-flex ic-flex-col ic-gap-2">
+            <span class="ic-poppi ic-smmed ic-semi ic-text-neutral-700">File <span
+                class="ic-text-neutral-500">*</span></span>
+            <label for="file"
+              class="ic-relative ic-d-flex ic-flex-col ic-items-center ic-justify-center ic-gap-4 ic-padding-8 ic-bg-neutral-50 ic-bg-neutral-100-hover ic-border-2 ic-border-dashed ic-border-neutral-400 ic-rounded-none ic-text-center ic-cursor-pointer">
+              <svg class="ic-h-16 ic-w-16 ic-text-neutral-400" viewBox="0 0 24 24" fill="none"
+                xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                <path d="M12 16V4M12 4 7 9M12 4l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                  stroke-linejoin="round" />
+                <path d="M4 15v3a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-3" stroke="currentColor" stroke-width="2"
+                  stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+              <span class="ic-poppi ic-copy ic-semi ic-text-neutral-900">Drag and drop your HTML file here</span>
+              <span class="ic-merri ic-mini ic-text-neutral-500">or</span>
+              <span class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi ic-tracking-wide">Browse files</span>
+              <span class="ic-merri ic-mini ic-text-neutral-400">Accepts .html and .htm files only</span>
+              <input id="file" name="htmlFile" type="file" accept=".html,.htm" required
+                class="ic-absolute ic-inset-0 ic-w-full ic-h-full ic-opacity-0 ic-cursor-pointer">
+            </label>
+          </div>
+
+          <!-- Submit -->
+          <button type="submit"
+            class="ic-btn-dark ic-btn-lg ic-w-full ic-rounded-none ic-poppi ic-semi ic-tracking-wide ic-margin-top-1">Upload</button>
+
+        </form>
+
+      </div>
+    </div>
+
+    <p class="ic-text-center ic-margin-top-4">
+      <a href="/" class="ic-poppi ic-smmed ic-text-neutral-600 ic-text-neutral-900-hover ic-underline">← Back to
+        home</a>
+    </p>
+
+  </div>
+
+</body>
+
+</html>

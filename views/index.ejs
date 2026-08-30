@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>NodeTricks</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic-framework.css">
+  <link rel="icon" href="./logo.svg" type="image/svg+xml">
+  <style>
+    h2 {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 100%;
+      width: 6rem;
+    }
+
+    .file-card {
+      transition: box-shadow 0.2s;
+    }
+
+    .file-card:hover {
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+
+<body class="ic-bg-neutral-100">
+  <header class="ic-bg-white ic-border-b-1 ic-border-neutral-200 ic-w-full ic-rounded-none">
+    <nav
+      class="ic-d-flex ic-justify-between ic-items-center ic-flex-wrap ic-gap-3 ic-padding-x-6 ic-padding-y-3 ic-w-full">
+
+      <!-- Logo + app name -->
+      <a href="/" class="ic-d-flex ic-items-center ic-gap-3">
+        <svg class="ic-h-10 ic-w-10 ic-text-neutral-900" viewBox="0 0 36 36" fill="none"
+          xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="M18 3 31 10.5v15L18 33 5 25.5v-15L18 3Z" stroke="currentColor" stroke-width="2" />
+          <path d="M18 13v5.5M18 18.5 11 24.5M18 18.5 25 24.5" stroke="currentColor" stroke-width="2"
+            stroke-linecap="round" />
+          <circle cx="18" cy="10.5" r="2.5" fill="currentColor" />
+          <circle cx="11" cy="24.5" r="2.5" fill="currentColor" />
+          <circle cx="25" cy="24.5" r="2.5" fill="currentColor" />
+        </svg>
+        <span class="ic-playf ic-large ic-bold ic-text-neutral-900">NodeTricks</span>
+      </a>
+
+      <!-- Actions -->
+      <div class="ic-d-flex ic-items-center ic-gap-3">
+        <% if(!user){ %>
+          <a href="/signup" class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi ic-tracking-wide">Sign up</a>
+          <a href="/login"
+            class="ic-btn-outline-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi ic-tracking-wide">Login</a>
+          <% } else { %>
+            <a href="/upload" class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi ic-tracking-wide">Upload</a>
+            <h2 class="ic-playf ic-body ic-bold ic-text-neutral-900">
+              <%= user.name %>
+            </h2>
+            <h2 class="ic-playf ic-body ic-bold ic-text-neutral-900">
+              <%= user.email %>
+            </h2>
+            <a href="/dashboard"></a>
+            <img src="https://i.pravatar.cc/80?img=12" alt="User avatar"
+              class="ic-h-10 ic-w-10 ic-border-1 ic-border-neutral-300 ic-rounded-none ic-object-cover ic-bg-neutral-100">
+            <form action="/logout" method="post" class="ic-d-inline">
+              <button type="submit" class="ic-btn-light ic-btn-sm ic-rounded-none ic-poppi ic-semi ic-tracking-wide">
+                Logout
+              </button>
+              <a href="/dashboard" class="ic-btn-outline-dark ic-btn-sm ic-rounded-none">Dashboard</a>
+            </form>
+            <% } %>
+      </div>
+    </nav>
+  </header>
+
+  <main class="ic-w-full ic-bg-neutral-100 ic-padding-y-10 ic-padding-x-4">
+    <div class="ic-w-60 ic-margin-x-auto">
+      <h1 class="ic-playf ic-large ic-bold ic-text-neutral-900 ic-margin-bottom-6">All Uploads</h1>
+
+      <% if (files && files.length> 0) { %>
+        <div class="ic-d-grid ic-grid-cols-1 ic-gap-6"
+          style="grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));">
+          <% files.forEach(file=> { %>
+            <div
+              class="file-card ic-bg-white ic-border-1 ic-border-neutral-200 ic-rounded-none ic-shadow-md ic-padding-4 ic-d-flex ic-flex-col ic-gap-2">
+              <a href="/file/<%= file._id %>.html"
+                class="ic-playf ic-copy ic-bold ic-text-neutral-900 ic-margin-0 ic-no-underline hover:ic-underline">
+                <%= file.title %>
+              </a>
+              <p class="ic-merri ic-mini ic-text-neutral-400">
+                <%= file.uploadedAt.toLocaleDateString() %>
+              </p>
+              <p class="ic-poppi ic-smmed ic-semi ic-text-neutral-600">
+                <%= file.description || 'No description' %>
+              </p>
+              <p class="ic-merri ic-mini ic-text-neutral-500">Original: <%= file.filename %>
+              </p>
+              <p class="ic-merri ic-mini ic-text-neutral-500">Id: <%= file.userId %>
+              </p>
+            </div>
+            <% }) %>
+        </div>
+        <% } else { %>
+          <p class="ic-poppi ic-body ic-text-neutral-500">No files uploaded yet. <a href="/upload"
+              class="ic-text-neutral-900 ic-underline">Upload one now</a>.</p>
+          <% } %>
+    </div>
+  </main>
+</body>
+
+</html>

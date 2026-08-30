@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard – NodeTricks</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic-framework.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/junaidprodeveloper/Iconic@main/iconic.css">
+</head>
+
+<body class="ic-bg-neutral-100 ic-d-flex ic-flex-col">
+
+    <!-- ============ Header ============ -->
+    <header class="ic-bg-white ic-border-b-1 ic-border-neutral-200 ic-w-full">
+        <nav class="ic-d-flex ic-justify-between ic-items-center ic-flex-wrap ic-gap-3 ic-padding-x-6 ic-padding-y-3">
+
+            <a href="/" class="ic-d-flex ic-items-center ic-gap-3">
+                <svg class="ic-h-10 ic-w-10 ic-text-neutral-900" viewBox="0 0 36 36" fill="none" aria-hidden="true">
+                    <path d="M18 3 31 10.5v15L18 33 5 25.5v-15L18 3Z" stroke="currentColor" stroke-width="2" />
+                    <path d="M18 13v5.5M18 18.5 11 24.5M18 18.5 25 24.5" stroke="currentColor" stroke-width="2"
+                        stroke-linecap="round" />
+                    <circle cx="18" cy="10.5" r="2.5" fill="currentColor" />
+                    <circle cx="11" cy="24.5" r="2.5" fill="currentColor" />
+                    <circle cx="25" cy="24.5" r="2.5" fill="currentColor" />
+                </svg>
+                <span class="ic-playf ic-large ic-bold ic-text-neutral-900">NodeTricks</span>
+            </a>
+
+            <div class="ic-d-flex ic-items-center ic-gap-3">
+                <a href="/" class="ic-btn-outline-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi">Home</a>
+                <a href="/upload" class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi">Upload</a>
+                <span class="ic-poppi ic-smmed ic-text-neutral-700">
+                    <%= user.name %>
+                </span>
+                <form action="/logout" method="post" class="ic-d-inline">
+                    <button type="submit"
+                        class="ic-btn-light ic-btn-sm ic-rounded-none ic-poppi ic-semi">Logout</button>
+                </form>
+            </div>
+
+        </nav>
+    </header>
+
+    <!-- ============ Main ============ -->
+    <main class="ic-grow-1 ic-padding-y-10 ic-padding-x-4">
+        <div class="ic-w-60 ic-margin-x-auto ic-d-flex ic-flex-col ic-gap-6">
+
+            <!-- Page title + count + CTA -->
+            <div class="ic-d-flex ic-flex-wrap ic-items-center ic-justify-between ic-gap-3">
+                <div class="ic-d-flex ic-items-center ic-gap-3">
+                    <h1 class="ic-playf ic-large ic-bold ic-text-neutral-900 ic-margin-0">Your Files</h1>
+                    <span
+                        class="ic-bg-neutral-900 ic-text-white ic-padding-x-2 ic-padding-y-0-5 ic-mini ic-semi ic-rounded-none">
+                        <%= files.length %>
+                    </span>
+                </div>
+                <a href="/upload" class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi">Upload</a>
+            </div>
+
+            <% if (files && files.length> 0) { %>
+
+                <!-- File list -->
+                <div class="ic-d-flex ic-flex-col ic-gap-4">
+
+                    <% files.forEach(file=> { %>
+                        <div
+                            class="ic-bg-white ic-border-1 ic-border-neutral-200 ic-rounded-none ic-shadow-md ic-padding-4 ic-d-flex ic-flex-wrap ic-items-center ic-justify-between ic-gap-3">
+
+                            <!-- Left: icon + meta -->
+                            <div class="ic-d-flex ic-items-start ic-gap-3 ic-flex-1">
+                                <svg class="ic-h-8 ic-w-8 ic-text-neutral-400 ic-shrink-0" viewBox="0 0 24 24"
+                                    fill="none" aria-hidden="true">
+                                    <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linejoin="round" />
+                                    <path d="M14 3v4h4" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linejoin="round" />
+                                    <path d="M10 12h5M10 16h5" stroke="currentColor" stroke-width="1.5"
+                                        stroke-linecap="round" />
+                                </svg>
+
+                                <div class="ic-flex-1">
+                                    <div class="ic-d-flex ic-flex-wrap ic-items-center ic-gap-2">
+                                        <a href="/file/<%= file._id %>.html"
+                                            class="ic-playf ic-copy ic-bold ic-text-neutral-900 ic-text-neutral-700-hover">
+                                            <%= file.title || file.filename %>
+                                        </a>
+                                        <span
+                                            class="ic-bg-neutral-100 ic-text-neutral-600 ic-border-1 ic-border-neutral-200 ic-padding-x-2 ic-padding-y-0-5 ic-mini ic-semi ic-rounded-none">
+                                            <%= (file.filename.split('.').pop() || 'file' ).toUpperCase() %>
+                                        </span>
+                                    </div>
+                                    <p class="ic-merri ic-mini ic-text-neutral-400 ic-margin-y-1">
+                                        <%= file.uploadedAt ? file.uploadedAt.toLocaleDateString() : '—' %>
+                                    </p>
+                                    <p class="ic-poppi ic-smmed ic-text-neutral-600">
+                                        <%= file.description || 'No description' %>
+                                    </p>
+                                    <p class="ic-merri ic-mini ic-text-neutral-500 ic-margin-top-1">Original: <%=
+                                            file.filename %>
+                                    </p>
+                                </div>
+                            </div>
+
+                            <!-- Right: actions -->
+                            <div class="ic-d-flex ic-items-center ic-gap-2 ic-flex-wrap">
+                                <form action="/file/delete/<%= file._id %>" method="post"
+                                    onsubmit="return confirm('Delete this file?')">
+                                    <button type="submit"
+                                        class="ic-btn-outline-danger ic-btn-sm ic-rounded-none ic-poppi ic-semi">Delete</button>
+                                </form>
+                                <form action="/file/reupload/<%= file._id %>" method="post"
+                                    enctype="multipart/form-data" class="ic-d-flex ic-items-center ic-gap-2">
+                                    <input type="file" name="htmlFile" accept=".html,.htm" required
+                                        class="ic-bg-white ic-border-1 ic-border-neutral-300 ic-rounded-none ic-padding-x-2 ic-padding-y-1 ic-mini ic-text-neutral-700">
+                                    <button type="submit"
+                                        class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi">Re-upload</button>
+                                </form>
+                            </div>
+
+                        </div>
+                        <% }) %>
+
+                </div>
+
+                <% } else { %>
+
+                    <!-- Empty state -->
+                    <div
+                        class="ic-bg-white ic-border-2 ic-border-dashed ic-border-neutral-300 ic-rounded-none ic-padding-12 ic-text-center ic-d-flex ic-flex-col ic-items-center ic-gap-4">
+                        <svg class="ic-h-16 ic-w-16 ic-text-neutral-300" viewBox="0 0 24 24" fill="none"
+                            aria-hidden="true">
+                            <path d="M7 3h7l4 4v14H7V3Z" stroke="currentColor" stroke-width="1.5"
+                                stroke-linejoin="round" />
+                            <path d="M14 3v4h4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" />
+                            <path d="M12 11v6M9 14h6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" />
+                        </svg>
+                        <h2 class="ic-playf ic-copy ic-bold ic-text-neutral-900 ic-margin-0">No files yet</h2>
+                        <p class="ic-merri ic-mini ic-text-neutral-500">You haven't uploaded anything. Start by
+                            uploading your first file.</p>
+                        <a href="/upload" class="ic-btn-dark ic-btn-sm ic-rounded-none ic-poppi ic-semi">Upload your
+                            first file</a>
+                    </div>
+
+                    <% } %>
+
+        </div>
+    </main>
+
+    <!-- ============ Footer ============ -->
+    <footer class="ic-bg-white ic-border-t-1 ic-border-neutral-200 ic-padding-y-4 ic-text-center">
+        <p class="ic-poppi ic-mini ic-text-neutral-500">© <%= new Date().getFullYear() %> NodeTricks · Built with Iconic
+        </p>
+    </footer>
+
+</body>
+
+</html>
