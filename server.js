@@ -2,7 +2,7 @@ const express = require('express');
 const bcrypt = require('bcrypt');
 const fileUpload = require('express-fileupload');
 const session = require('express-session');
-const MongoDBStore = require('connect-mongodb-session')(session);
+const MongoStore = require('connect-mongo');          // <-- new
 const mongoose = require('mongoose');
 const path = require('path');
 const fs = require('fs');
@@ -19,15 +19,14 @@ mongoose.connect(MONGO_URI)
     .then(() => console.log('MongoDB connected successfully'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// -------------------- Session Store in MongoDB --------------------
-const store = new MongoDBStore({
-    uri: MONGO_URI,
-    collection: 'sessions',
-    expires: 365 * 24 * 60 * 60 * 1000 // 1 year
+// -------------------- Session Store in MongoDB (fixed) --------------------
+const store = MongoStore.create({
+    mongoUrl: MONGO_URI,
+    collectionName: 'sessions',
+    ttl: 365 * 24 * 60 * 60, // 1 year in seconds
+    autoRemove: 'native'     // use MongoDB TTL index
 });
-store.on('error', error => console.error('Session store error:', error));
 
-// -------------------- Middleware --------------------
 app.use(fileUpload({
     limits: { fileSize: 5 * 1024 * 1024 }
 }));
@@ -40,7 +39,7 @@ app.use(session({
     secret: secret,
     resave: false,
     saveUninitialized: false,
-    store: store,                     // <-- now persistent
+    store: store,                     // <-- now using connect‑mongo
     cookie: {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -68,7 +67,6 @@ const File = mongoose.model('File', fileSchema);
 
 // -------------------- Routes --------------------
 
-// Home – show all files
 app.get('/', async (req, res) => {
     if (!req.session.userId) return res.redirect('/login');
     try {
@@ -81,17 +79,14 @@ app.get('/', async (req, res) => {
     }
 });
 
-// Auth pages
 app.get('/signup', (req, res) => res.render('signup'));
 app.get('/login', (req, res) => res.render('login'));
 
-// Upload page
 app.get('/upload', (req, res) => {
     if (!req.session.userId) return res.redirect('/login');
     res.render('upload', { user: req.session.userId });
 });
 
-// Dashboard – user's own files
 app.get('/dashboard', async (req, res) => {
     if (!req.session.userId) return res.redirect('/login');
     try {
